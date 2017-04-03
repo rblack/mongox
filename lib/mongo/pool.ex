@@ -28,10 +28,11 @@ defmodule Mongo.Pool do
   @doc false
   defmacro __using__(opts) do
     adapter = Keyword.fetch!(opts, :adapter)
+    timeout = Keyword.get(opts, :timeout)
 
     quote do
       # TODO: Customizable timeout
-      @timeout   5_000
+      @timeout   unquote(timeout) || 5_000
       @behaviour unquote(__MODULE__)
       @adapter   unquote(adapter)
       @name      __MODULE__

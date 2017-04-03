@@ -18,6 +18,7 @@ defmodule Mongo.Connection do
   @find_one_flags ~w(slave_ok exhaust partial)a
   @find_flags ~w(tailable_cursor slave_ok no_cursor_timeout await_data exhaust allow_partial_results)a
   @update_flags ~w(upsert multi)a
+  @call_timeout :timer.seconds(90)
 
   @doc """
   Starts the connection process.
@@ -56,7 +57,7 @@ defmodule Mongo.Connection do
 
   @doc false
   def find(conn, coll, query, select, opts \\ []) do
-    GenServer.call(conn, {:find, coll, query, select, opts}, get_timeout(opts))
+    GenServer.call(conn, {:find, coll, query, select, opts}, @call_timeout)
   end
 
   @doc false
@@ -74,13 +75,13 @@ defmodule Mongo.Connection do
   when it's not set it will default to 5000 milliseconds
   """
   def find_one(conn, coll, query, select, opts \\ []) do
-    GenServer.call(conn, {:find_one, coll, query, select, opts}, get_timeout(opts))
+    GenServer.call(conn, {:find_one, coll, query, select, opts}, @call_timeout)
   end
 
   @doc false
   def insert(conn, coll, docs, opts \\ []) do
     {ids, docs} = assign_ids(docs)
-    case GenServer.call(conn, {:insert, coll, docs, opts}) do
+    case GenServer.call(conn, {:insert, coll, docs, opts}, @call_timeout) do
       {:ok, result} -> {:ok, %{result | inserted_ids: ids}}
       other -> other
     end
@@ -88,12 +89,12 @@ defmodule Mongo.Connection do
 
   @doc false
   def update(conn, coll, query, update, opts \\ []) do
-    GenServer.call(conn, {:update, coll, query, update, opts})
+    GenServer.call(conn, {:update, coll, query, update, opts}, @call_timeout)
   end
 
   @doc false
   def remove(conn, coll, query, opts \\ []) do
-    GenServer.call(conn, {:remove , coll, query, opts})
+    GenServer.call(conn, {:remove , coll, query, opts}, @call_timeout)
   end
 
   @doc false
